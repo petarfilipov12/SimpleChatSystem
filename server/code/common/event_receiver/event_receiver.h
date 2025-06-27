@@ -15,73 +15,28 @@ class EventReceiver {
     private:
         eventReceiverId_t id;
         std::set<eventId_t> events;
-        std::function<void(Event)> callback;
+        std::function<void(Event&)> callback;
 
     public:
-        EventReceiver()
-        {
-            this->id = RECEIVER_ID_INVALID;
-            this->callback = nullptr;
-        }
+        EventReceiver();
 
-        EventReceiver(const eventReceiverId_t id, const std::function<void(Event)> callback)
-        {
-            this->id = id;
-            this->callback = callback;
-        }
+        EventReceiver(const eventReceiverId_t id, const std::function<void(Event&)> callback);
 
-        //~EventReceiver(){}
+        ~EventReceiver();
 
-        returnType_t AddEvent(const eventId_t event_id)
-        {
-            returnType_t ret = RET_EVENT_ID_INVALID;
+        returnType_t AddEvent(const eventId_t event_id);
 
-            if(event_id < EVENT_ID_INVALID)
-            {
-                this->events.insert(event_id);
+        returnType_t RemoveEvent(const eventId_t event_id);
 
-                ret = RET_OK;
-            }
+        bool IsEmpty() const;
 
-            return ret;
-        }
+        bool ContainsEvent(const eventId_t event_id) const;
 
-        returnType_t RemoveEvent(const eventId_t event_id)
-        {
-            returnType_t ret = RET_EVENT_ID_INVALID;
+        std::set<eventId_t>* GetEvents();
 
-            if(event_id < EVENT_ID_INVALID)
-            {
-                this->events.erase(event_id);
-            }
+        eventReceiverId_t GetId() const;
 
-            return ret;
-        }
-
-        bool IsEmpty() const
-        {
-            return this->events.empty();
-        }
-
-        bool ContainsEvent(const eventId_t event_id) const
-        {
-            return this->events.find(event_id) != this->events.end();
-        }
-
-        std::set<eventId_t>* GetEvents()
-        {
-            return &this->events;
-        }
-
-        eventReceiverId_t GetId() const
-        {
-            return this->id;
-        }
-
-        std::function<void(Event)> GetCallback() const
-        {
-            return this->callback;
-        }
+        std::function<void(Event&)> GetCallback() const;
 };
 
 #endif

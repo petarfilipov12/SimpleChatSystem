@@ -17,28 +17,14 @@ class Event{
         void* data_out;
 
     public:
-        Event(const eventId_t id, const void* data_in, void* data_out)
-        {
-            this->id = id;
-            this->data_in = data_in;
-            this->data_out = data_out;
-        }
-        ~Event() {}
+        Event(const eventId_t id, const void* data_in, void* data_out);
+        ~Event();
 
-        eventId_t GetEventId() const
-        {
-            return this->id;
-        }
+        eventId_t GetEventId() const;
 
-        const void* GetDataIn() const
-        {
-            return this->data_in;
-        }
+        const void* GetDataIn() const;
 
-        void* GetDataOut() const
-        {
-            return this->data_out;
-        }
+        void* GetDataOut() const;
 };
 
 #endif
