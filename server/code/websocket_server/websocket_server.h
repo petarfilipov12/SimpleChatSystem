@@ -23,6 +23,7 @@ using websocketpp::lib::bind;
 class WebsocketBroadcastServer {
 private:
     EventBus& event_bus;
+    EventReceiver event_receiver;
 
     std::map<connection_hdl, User> conn_user_map;
     std::set<std::string> usernames;
@@ -33,25 +34,28 @@ private:
     const uint srv_port;
 
     void OpenHandler(connection_hdl hdl) {
-        this->conn_user_map.insert({hdl, this->val_map[hdl]});
-        this->usernames.insert(this->val_map[hdl].GetUsername());
-
-        event_bus.Send(Event(EVENT_ID_CONNECTION_OPENED, &(this->val_map[hdl]), nullptr));
-
+        User user = this->val_map[hdl];
         this->val_map.erase(hdl);
+
+        user.SetCurrentTime();
+
+        this->conn_user_map.insert({hdl, user});
+        this->usernames.insert(user.GetUsername());
+
+        this->event_bus.Send(Event(EVENT_ID_CONNECTION_OPENED, &user, nullptr));
     }
 
     void CloseHandler(connection_hdl hdl) {
-        event_bus.Send(Event(EVENT_ID_CONNECTION_CLOSED, &(this->conn_user_map[hdl]), nullptr));
+        this->event_bus.Send(Event(EVENT_ID_CONNECTION_CLOSED, &(this->conn_user_map[hdl]), nullptr));
 
         this->usernames.erase(this->conn_user_map[hdl].GetUsername());
         this->conn_user_map.erase(hdl);
     }
 
     void MessageHandler(connection_hdl hdl, server::message_ptr msg) {
-        Message message{this->conn_user_map[hdl].GetUsername(), msg->get_payload()};
+        Message message(this->conn_user_map[hdl], msg->get_payload());
 
-        event_bus.Send(Event(EVENT_ID_NEW_MESSAGE, &message, nullptr));
+        this->event_bus.Send(Event(EVENT_ID_NEW_MESSAGE, &message, nullptr));
 
         for(auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
         {
@@ -79,12 +83,12 @@ private:
     }
 
     void FailHandler(connection_hdl hdl) {
-        event_bus.Send(Event(EVENT_ID_CONNECTION_FAILED, &(this->val_map[hdl]), nullptr));
+        this->event_bus.Send(Event(EVENT_ID_CONNECTION_FAILED, &(this->val_map[hdl]), nullptr));
 
         this->val_map.erase(hdl);
     }
 
-    void CloseConnection(connection_hdl& hdl)
+    void CloseConnection(connection_hdl hdl)
     {
         this->srv.close(hdl, websocketpp::close::status::normal, "");
     }
@@ -139,8 +143,34 @@ private:
         port = this->srv.get_con_from_hdl(hdl)->get_raw_socket().remote_endpoint().port();
     }
 
+    void DisconnectUser(Event &event)
+    {
+        User *p_user = (User *)event.GetDataIn();
+
+        for (auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
+        {
+            if (it->second == *p_user)
+            {
+                this->CloseConnection(it->first);
+                break;
+            }
+        }
+    }
+
+    void EventHandler(Event& event)
+    {
+        switch(event.GetEventId())
+        {
+            case EVENT_ID_DISCONNECT_USER:
+                this->DisconnectUser(event);
+                break;
+            default:
+                break;
+        }
+    }
+
 public:
-    WebsocketBroadcastServer(EventBus& event_bus, const uint port): event_bus(event_bus), srv_port(port) {
+    WebsocketBroadcastServer(EventBus& event_bus, const uint port, eventReceiverId_t receiver_id): event_bus(event_bus), srv_port(port) {
         this->srv.init_asio();
 
         this->srv.set_open_handler(bind(&WebsocketBroadcastServer::OpenHandler, this, placeholders::_1));
@@ -148,6 +178,11 @@ public:
         this->srv.set_message_handler(bind(&WebsocketBroadcastServer::MessageHandler, this, placeholders::_1, placeholders::_2));
         this->srv.set_validate_handler(bind(&WebsocketBroadcastServer::ValidateHandler, this, placeholders::_1));
         this->srv.set_fail_handler(bind(&WebsocketBroadcastServer::FailHandler, this, placeholders::_1));
+
+        this->event_receiver = EventReceiver(receiver_id, std::bind(&WebsocketBroadcastServer::EventHandler, this, std::placeholders::_1));
+
+        this->event_bus.AddReceiver(this->event_receiver);
+        this->event_bus.Subscribe(receiver_id, EVENT_ID_DISCONNECT_USER);
     }
 
     void run() {

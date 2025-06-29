@@ -2,6 +2,7 @@
 #define USER_H
 
 #include <string>
+#include <ctime>
 
 class User
 {
@@ -9,6 +10,7 @@ private:
     std::string username;
     std::string ip;
     uint port;
+    time_t joined_timestamp;
 
 public:
     User()
@@ -40,6 +42,16 @@ public:
         return this->port;
     }
 
+    time_t GetJoinedTimestamp() const
+    {
+        return this->joined_timestamp;
+    }
+
+    void SetCurrentTime()
+    {
+        this->joined_timestamp = time(nullptr);
+    }
+
     std::string ToString() const
     {
         return this->username + " -> " + this->ip + ":" + std::to_string(this->port);
@@ -50,6 +62,19 @@ public:
         this->username = u.username;
         this->ip = u.ip;
         this->port = u.port;
+        this->joined_timestamp = u.joined_timestamp;
+    }
+
+    bool operator==(const User& u) const
+    {
+        bool ret = false;
+
+        if(this->username == u.username)
+        {
+            ret = true;
+        }
+
+        return ret;
     }
 };
 

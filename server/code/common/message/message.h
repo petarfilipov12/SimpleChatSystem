@@ -2,15 +2,33 @@
 #define MESSAGE_H
 
 #include <string>
+#include "user.h"
 
-struct Message
+class Message
 {
-    const std::string m_username;
-    const std::string m_text;
+private:
+    const User user;
+    const std::string text;
+
+public:
+    Message(const User& user, const std::string& text): user(user), text(text)
+    {
+
+    }
+
+    User GetUser() const
+    {
+        return this->user;
+    }
+
+    std::string GetText() const
+    {
+        return this->text;
+    }
 
     std::string ToString() const
     {
-        return this->m_username + ": " + this->m_text;
+        return this->user.GetUsername() + ": " + this->text;
     }
 };
 
