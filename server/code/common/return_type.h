@@ -12,6 +12,9 @@ enum eReturnType_t
     RET_EVENT_ID_INVALID,
     RET_NO_RECEIVERS_FOR_EVENT,
 
+    //Websocket Server
+    RET_USERNAME_HEADER_MISSING,
+
     RET_INVALID
 };
 
