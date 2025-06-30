@@ -1,39 +1,27 @@
 #include <iostream>
 
-#include "event_bus.h"
-#include "event.h"
+#include <chrono>
 
-void Handler(Event& event)
-{
-    if(event.GetEventId() == EVENT_ID_TEMP)
-    {
-        std::cout << "Handler" << std::endl;
-        *((int*)event.GetDataOut()) = *((int*)event.GetDataIn()) + 5;
-    }
-}
+#include "event_bus.h"
+#include "client_mgr.h"
+#include "websocket_server.h"
 
 int main()
 {
     EventBus event_bus;
+    eventReceiverId_t receiver_id = 0;
+    std::vector<std::thread> threads;
 
-    Event event(EVENT_ID_TEMP, nullptr, nullptr);
-    std::cout << event_bus.Send(event) << std::endl;
+    ClientMgr client_mgr(event_bus, receiver_id);
+    WebsocketBroadcastServer ws_server(event_bus, 9002, ++receiver_id);
 
-    event = Event(EVENT_ID_INVALID, nullptr, nullptr);
-    std::cout << event_bus.Send(event) << std::endl;
+    client_mgr.run();
+    ws_server.run();
 
-
-    std::cout << "TUK" << std::endl;
-    EventReceiver event_receiver(0, Handler);
-    std::cout << event_bus.AddReceiver(event_receiver) << std::endl;
-    std::cout << event_bus.Subscribe(0, EVENT_ID_TEMP) << std::endl;
-
-    int data_in = 5;
-    int data_out;
-    event = Event(EVENT_ID_TEMP, &data_in, &data_out);
-    std::cout << event_bus.Send(event) << std::endl;
-    std::cout << data_in << std::endl;
-    std::cout << data_out << std::endl;
+    while(true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 
     return 0;
 }

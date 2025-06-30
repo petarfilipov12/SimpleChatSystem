@@ -5,6 +5,7 @@
 
 #include <map>
 #include <set>
+#include <thread>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
@@ -25,10 +26,10 @@ private:
     EventBus& event_bus;
     EventReceiver event_receiver;
 
-    std::map<connection_hdl, User> conn_user_map;
+    std::map<connection_hdl, User, std::owner_less<connection_hdl> > conn_user_map;
     std::set<std::string> usernames;
 
-    std::map<connection_hdl, User> val_map;
+    std::map<connection_hdl, User, std::owner_less<connection_hdl> > val_map;
     
     server srv;
     const uint srv_port;
@@ -46,10 +47,11 @@ private:
     }
 
     void CloseHandler(connection_hdl hdl) {
-        this->event_bus.Send(Event(EVENT_ID_CONNECTION_CLOSED, &(this->conn_user_map[hdl]), nullptr));
-
-        this->usernames.erase(this->conn_user_map[hdl].GetUsername());
+        User user = this->conn_user_map[hdl];
         this->conn_user_map.erase(hdl);
+        this->usernames.erase(user.GetUsername());
+
+        this->event_bus.Send(Event(EVENT_ID_CONNECTION_CLOSED, &user, nullptr));
     }
 
     void MessageHandler(connection_hdl hdl, server::message_ptr msg) {
@@ -83,9 +85,10 @@ private:
     }
 
     void FailHandler(connection_hdl hdl) {
-        this->event_bus.Send(Event(EVENT_ID_CONNECTION_FAILED, &(this->val_map[hdl]), nullptr));
-
+        User user = this->val_map[hdl];
         this->val_map.erase(hdl);
+
+        this->event_bus.Send(Event(EVENT_ID_CONNECTION_FAILED, &user, nullptr));
     }
 
     void CloseConnection(connection_hdl hdl)
@@ -188,7 +191,9 @@ public:
     void run() {
         this->srv.listen(this->srv_port);
         this->srv.start_accept();
-        this->srv.run();
+       
+        std::thread t([this]{this->srv.run();});
+        t.detach();
     }
     
 };

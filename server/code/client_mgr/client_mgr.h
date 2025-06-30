@@ -5,6 +5,7 @@
 
 #include <map>
 #include <ctime>
+#include <chrono>
 
 #include "event.h"
 #include "event_bus.h"
@@ -62,11 +63,13 @@ private:
         {
             for(auto it = this->user_timeouts.begin(); it != this->user_timeouts.end(); it++)
             {
-                if(it->second >= this->timeout)
+                if(time(nullptr) >= (it->second + this->timeout))
                 {
                     this->event_bus.Send(Event(EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
                 }
             }
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 
@@ -79,6 +82,12 @@ public:
         this->event_bus.Subscribe(receiver_id, EVENT_ID_CONNECTION_OPENED);
         this->event_bus.Subscribe(receiver_id, EVENT_ID_CONNECTION_CLOSED);
         this->event_bus.Subscribe(receiver_id, EVENT_ID_NEW_MESSAGE);
+    }
+
+    void run()
+    {
+        std::thread t([this]{this->Cyclic();});
+        t.detach();
     }
 };
 

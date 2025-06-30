@@ -106,11 +106,11 @@ returnType_t EventBus::Send(const Event &event)
             std::vector<std::thread> threads;
 
             for (
-                std::set<eventReceiverId_t>::iterator itr_receiver_id = this->event_to_receivers_map[event.GetEventId()].begin();
-                itr_receiver_id != this->event_to_receivers_map[event.GetEventId()].end();
-                itr_receiver_id++)
+                auto itr_receiver = this->event_to_receivers_map[event.GetEventId()].begin();
+                itr_receiver != this->event_to_receivers_map[event.GetEventId()].end();
+                itr_receiver++)
             {
-                threads.push_back(std::thread(this->event_receivers[*itr_receiver_id].GetCallback(), std::ref((Event &)event)));
+                threads.push_back(std::thread(this->event_receivers[*itr_receiver].GetCallback(), std::ref((Event &)event)));
             }
 
             for (int i = 0; i < threads.size(); i++)

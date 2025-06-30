@@ -63,6 +63,8 @@ public:
         this->ip = u.ip;
         this->port = u.port;
         this->joined_timestamp = u.joined_timestamp;
+
+        return *this;
     }
 
     bool operator==(const User& u) const
@@ -75,6 +77,11 @@ public:
         }
 
         return ret;
+    }
+
+    bool operator<(const User& u) const
+    {
+        return this->username < u.username;
     }
 };
 
