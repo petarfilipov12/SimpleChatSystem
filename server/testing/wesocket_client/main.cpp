@@ -57,11 +57,11 @@ int main() {
         std::thread t([]{c.run();});
         t.detach();
 
-        std::string msg;
         while(true)
         {
+            std::string msg;
             std::cout << "MSG: ";
-            std::cin >> msg;
+            std::getline(std::cin >> std::ws, msg);
 
             if(msg == "QUIT")
             {

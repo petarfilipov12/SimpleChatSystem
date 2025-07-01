@@ -74,7 +74,7 @@ private:
     }
 
 public:
-    ClientMgr(EventBus& event_bus, eventReceiverId_t receiver_id): event_bus(event_bus)
+    ClientMgr(EventBus& event_bus, const eventReceiverId_t receiver_id): event_bus(event_bus)
     {
         this->event_receiver = EventReceiver(receiver_id, std::bind(&ClientMgr::EventHandler, this, std::placeholders::_1));
 

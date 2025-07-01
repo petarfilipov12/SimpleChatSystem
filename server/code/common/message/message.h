@@ -2,6 +2,8 @@
 #define MESSAGE_H
 
 #include <string>
+#include <ctime>
+
 #include "user.h"
 
 class Message
@@ -9,9 +11,10 @@ class Message
 private:
     const User user;
     const std::string text;
+    const time_t msg_timestamp;
 
 public:
-    Message(const User& user, const std::string& text): user(user), text(text)
+    Message(const User& user, const std::string& text, const time_t& msg_timestamp): user(user), text(text), msg_timestamp(msg_timestamp)
     {
 
     }
@@ -28,7 +31,21 @@ public:
 
     std::string ToString() const
     {
-        return this->user.GetUsername() + ": " + this->text;
+        struct tm* date = localtime(&(this->msg_timestamp));
+
+        std::string d = (
+            "[" + 
+            std::to_string(1900 + date->tm_year) + "-" +
+            std::to_string(date->tm_mon) + "-" + 
+            std::to_string(date->tm_mday) + 
+            " " + 
+            std::to_string(date->tm_hour) + ":" + 
+            std::to_string(date->tm_min) + ":" + 
+            std::to_string(date->tm_sec) + 
+            "]"
+        );
+
+        return d + " " + this->user.GetUsername() + ": " + this->text;
     }
 };
 

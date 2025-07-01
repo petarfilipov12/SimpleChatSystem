@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <thread>
+#include <ctime>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
@@ -55,7 +56,7 @@ private:
     }
 
     void MessageHandler(connection_hdl hdl, server::message_ptr msg) {
-        Message message(this->conn_user_map[hdl], msg->get_payload());
+        Message message(this->conn_user_map[hdl], msg->get_payload(), time(nullptr));
 
         this->event_bus.Send(Event(EVENT_ID_NEW_MESSAGE, &message, nullptr));
 
