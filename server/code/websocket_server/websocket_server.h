@@ -147,6 +147,16 @@ private:
         port = this->srv.get_con_from_hdl(hdl)->get_raw_socket().remote_endpoint().port();
     }
 
+    void GetUsers(Event& event)
+    {
+        std::set<User>* p_users = (std::set<User>*)event.GetDataOut();
+
+        for(auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
+        {
+            p_users->insert(it->second);
+        }
+    }
+
     void DisconnectUser(Event &event)
     {
         User *p_user = (User *)event.GetDataIn();
@@ -165,6 +175,9 @@ private:
     {
         switch(event.GetEventId())
         {
+            case EVENT_ID_GET_USERS:
+                this->GetUsers(event);
+                break;
             case EVENT_ID_DISCONNECT_USER:
                 this->DisconnectUser(event);
                 break;

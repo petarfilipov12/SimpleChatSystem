@@ -20,6 +20,13 @@ public:
         this->port = 0;
     }
 
+    User(std::string username)
+    {
+        this->username = username;
+        this->ip = "";
+        this->port = 0;
+    }
+
     User(std::string username, std::string ip, uint port)
     {
         this->username = username;
