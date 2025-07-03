@@ -30,17 +30,17 @@ RestServer::RestServer(const std::string& host, const unsigned int port, EventBu
 
 RestServer::~RestServer()
 {
-    delete this->svr;
+    //delete this->svr;
 }
 
 void RestServer::Post(const std::string& url_path, const std::function<void(const httplib::Request &, httplib::Response &)> handler_func)
 {
-    this->svr->Post(url_path, handler_func);
+    this->svr.Post(url_path, handler_func);
 }
 
 void RestServer::run()
 {
-    std::thread thread_rest_server([this]{this->svr->listen(this->host, this->port);});
+    std::thread thread_rest_server([this]{this->svr.listen(this->host, this->port);});
     thread_rest_server.detach();
 }
 

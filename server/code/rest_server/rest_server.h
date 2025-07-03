@@ -12,7 +12,7 @@
 class RestServer
 {
 private:
-    httplib::Server *svr;
+    httplib::Server svr;
     std::string host;
     unsigned int port;
 
