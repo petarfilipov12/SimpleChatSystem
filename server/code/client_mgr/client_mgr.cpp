@@ -13,8 +13,10 @@ void ClientMgr::ConnectionOpened(event_bus::Event &event)
     common::User *p_user = (common::User *)event.GetDataIn();
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
-    std::unique_lock<std::shared_mutex> lock_users(this->mtx_users);
     this->user_timeouts[*p_user] = time(nullptr);
+    lock_user_timeouts.unlock();
+
+    std::unique_lock<std::shared_mutex> lock_users(this->mtx_users);
     this->users.insert(*p_user);
 }
 
@@ -23,8 +25,10 @@ void ClientMgr::ConnectionClosed(event_bus::Event &event)
     common::User *p_user = (common::User *)event.GetDataIn();
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
-    std::unique_lock<std::shared_mutex> lock_users(this->mtx_users);
     this->user_timeouts.erase(*p_user);
+    lock_user_timeouts.unlock();
+
+    std::unique_lock<std::shared_mutex> lock_users(this->mtx_users);
     this->users.erase(*p_user);
 }
 
@@ -70,14 +74,16 @@ void ClientMgr::Cyclic()
     while (true)
     {
         std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
-        for (auto it = this->user_timeouts.begin(); it != this->user_timeouts.end(); it++)
+        auto user_timeouts_snapshot = this->user_timeouts;
+        lock_user_timeouts.unlock();
+
+        for (auto it = user_timeouts_snapshot.begin(); it != user_timeouts_snapshot.end(); it++)
         {
             if (time(nullptr) >= (it->second + this->timeout))
             {
                 this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
             }
         }
-        lock_user_timeouts.unlock();
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }

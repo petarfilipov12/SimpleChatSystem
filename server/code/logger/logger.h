@@ -3,6 +3,7 @@
 
 #include <string>
 #include <set>
+#include <mutex>
 
 #include "event.h"
 #include "event_bus.h"
@@ -17,6 +18,8 @@ namespace logger
         std::string current_log_file;
 
         event_bus::EventReceiver event_receiver;
+
+        std::mutex mtx;
 
         void SetCurrentLogName();
 

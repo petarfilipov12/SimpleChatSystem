@@ -122,12 +122,12 @@ returnType_t EventBus::Send(const Event &event)
 
     if (EVENT_ID_INVALID != event.GetEventId())
     {
+        std::shared_lock<std::shared_mutex> lock_event_receivers(this->mtx_event_receivers);//avoid deadlock
         std::shared_lock<std::shared_mutex> lock_event_to_receivers_map(this->mtx_event_to_receivers_map);
         if (this->event_to_receivers_map.find(event.GetEventId()) != this->event_to_receivers_map.end())
         {
             std::vector<std::thread> threads;
 
-            std::shared_lock<std::shared_mutex> lock_event_receivers(this->mtx_event_receivers);
             for (
                 auto itr_receiver = this->event_to_receivers_map[event.GetEventId()].begin();
                 itr_receiver != this->event_to_receivers_map[event.GetEventId()].end();

@@ -17,6 +17,7 @@ void Logger::SetCurrentLogName()
     time_t t = time(nullptr);
     struct tm *date = localtime(&t);
 
+    std::lock_guard<std::mutex> guard_mtx(this->mtx);
     this->current_log_file = (std::to_string(1900 + date->tm_year) +
                               "-" + std::to_string(date->tm_mon) +
                               "-" + std::to_string(date->tm_mday) +
@@ -28,6 +29,8 @@ void Logger::SetCurrentLogName()
 void Logger::NewMessage(event_bus::Event &event)
 {
     common::Message *p_message = (common::Message *)event.GetDataIn();
+
+    std::lock_guard<std::mutex> guard_mtx(this->mtx);
     common::FileAppendOrWrite(this->log_dir + "/" + this->current_log_file, p_message->ToString() + '\n');
 }
 

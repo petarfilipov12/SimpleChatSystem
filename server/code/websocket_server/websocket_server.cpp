@@ -9,33 +9,49 @@ using namespace websocket_server;
 
 void WebsocketServer::OpenHandler(websocketpp::connection_hdl hdl)
 {
+    std::unique_lock<std::mutex> lock_val_map(this->mtx_val_map);
     common::User user = this->val_map[hdl];
     this->val_map.erase(hdl);
+    lock_val_map.unlock();
 
     user.SetCurrentTime();
 
+    std::unique_lock<std::shared_mutex> lock_conn_user_map(this->mtx_conn_user_map);
     this->conn_user_map.insert({hdl, user});
+    lock_conn_user_map.unlock();
+
+    std::unique_lock<std::shared_mutex> lock_usernames(this->mtx_usernames);
     this->usernames.insert(user.GetUsername());
+    lock_usernames.unlock();
 
     this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, &user, nullptr));
 }
 
 void WebsocketServer::CloseHandler(websocketpp::connection_hdl hdl)
 {
+    std::unique_lock<std::shared_mutex> lock_conn_user_map(this->mtx_conn_user_map);
     common::User user = this->conn_user_map[hdl];
     this->conn_user_map.erase(hdl);
+    lock_conn_user_map.unlock();
+
+    std::unique_lock<std::shared_mutex> lock_usernames(this->mtx_usernames);
     this->usernames.erase(user.GetUsername());
+    lock_usernames.unlock();
 
     this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, &user, nullptr));
 }
 
 void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketpp::server<websocketpp::config::asio>::message_ptr msg)
 {
-    common::Message message(this->conn_user_map[hdl], msg->get_payload(), time(nullptr));
+    std::shared_lock<std::shared_mutex> lock_conn_user_map(this->mtx_conn_user_map);
+    auto conn_user_map_snapshot = this->conn_user_map;
+    lock_conn_user_map.unlock();
+
+    common::Message message(conn_user_map_snapshot[hdl], msg->get_payload(), time(nullptr));
 
     this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, &message, nullptr));
 
-    for (auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
+    for (auto it = conn_user_map_snapshot.begin(); it != conn_user_map_snapshot.end(); it++)
     {
         this->srv.send(it->first, message.ToString(), msg->get_opcode());
     }
@@ -47,13 +63,16 @@ bool WebsocketServer::ValidateHandler(websocketpp::connection_hdl hdl)
 
     bool ret = false;
 
-    if (
-        (this->GetConnectionUser(hdl, user) == RET_OK) &&
-        (this->usernames.find(user.GetUsername()) == this->usernames.end()))
+    if (this->GetConnectionUser(hdl, user) == RET_OK)
     {
-        ret = true;
+        std::shared_lock<std::shared_mutex> lock_usernames(this->mtx_usernames);
+        if (this->usernames.find(user.GetUsername()) == this->usernames.end())
+        {
+            ret = true;
+        }
     }
 
+    std::lock_guard<std::mutex> lock_val_map(this->mtx_val_map);
     this->val_map.insert({hdl, user});
 
     return ret;
@@ -61,8 +80,10 @@ bool WebsocketServer::ValidateHandler(websocketpp::connection_hdl hdl)
 
 void WebsocketServer::FailHandler(websocketpp::connection_hdl hdl)
 {
+    std::unique_lock<std::mutex> lock_val_map(this->mtx_val_map);
     common::User user = this->val_map[hdl];
     this->val_map.erase(hdl);
+    lock_val_map.unlock();
 
     this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, &user, nullptr));
 }

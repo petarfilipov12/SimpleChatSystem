@@ -6,6 +6,8 @@
 
 #include <map>
 #include <set>
+#include <mutex>
+#include <shared_mutex>
 
 #include "return_type.h"
 
@@ -25,6 +27,10 @@ namespace websocket_server
         std::set<std::string> usernames;
 
         std::map<websocketpp::connection_hdl, common::User, std::owner_less<websocketpp::connection_hdl>> val_map;
+
+        std::shared_mutex mtx_conn_user_map;
+        std::shared_mutex mtx_usernames;
+        std::mutex mtx_val_map;
 
         websocketpp::server<websocketpp::config::asio> srv;
         const uint srv_port;
