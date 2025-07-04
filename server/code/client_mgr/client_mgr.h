@@ -12,26 +12,26 @@ namespace client_mgr
     class ClientMgr
     {
     private:
-        EventBus &event_bus;
-        event_receiver::EventReceiver event_receiver;
+        event_bus::EventBus &event_bus;
+        event_bus::EventReceiver event_receiver;
         const time_t timeout = 10 * 60; // 10min
 
-        std::map<user::User, time_t> user_timeouts;
+        std::map<common::User, time_t> user_timeouts;
 
-        void ConnectionOpened(event::Event &event);
+        void ConnectionOpened(event_bus::Event &event);
 
-        void ConnectionClosed(event::Event &event);
+        void ConnectionClosed(event_bus::Event &event);
 
-        void NewMessage(event::Event &event);
+        void NewMessage(event_bus::Event &event);
 
-        void GetUsers(event::Event &event);
+        void GetUsers(event_bus::Event &event);
 
-        void EventHandler(event::Event &event);
+        void EventHandler(event_bus::Event &event);
 
         void Cyclic();
 
     public:
-        ClientMgr(EventBus &event_bus, const event_receiver::eventReceiverId_t receiver_id);
+        ClientMgr(event_bus::EventBus &event_bus, const event_bus::eventReceiverId_t receiver_id);
 
         void run();
     };

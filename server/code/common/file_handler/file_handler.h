@@ -7,18 +7,18 @@
 #include <set>
 
 
-namespace file_handler
+namespace common
 {
-    returnType_t Read(const std::string& file_path, std::string& string_out);
+    returnType_t FileRead(const std::string& file_path, std::string& string_out);
 
-    void Write(const std::string& file_path, const std::string& text);
+    void FileWrite(const std::string& file_path, const std::string& text);
 
-    returnType_t Append(const std::string& file_path, const std::string& text);
+    returnType_t FileAppend(const std::string& file_path, const std::string& text);
 
-    void AppendOrWrite(const std::string& file_path, const std::string& text);
+    void FileAppendOrWrite(const std::string& file_path, const std::string& text);
 
-    returnType_t GetFiles(const std::string& dir_path, std::set<std::string>& file_paths_out);
+    returnType_t FileGetFiles(const std::string& dir_path, std::set<std::string>& file_paths_out);
 
-}//namespace file_handler
+}//namespace common
 
 #endif

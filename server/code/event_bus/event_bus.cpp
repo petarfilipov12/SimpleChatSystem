@@ -1,7 +1,9 @@
 #include "event_bus.h"
 
-// #include <thread>
-// #include <vector>
+#include <thread>
+#include <vector>
+
+using namespace event_bus;
 
 EventBus::EventBus() {}
 EventBus::~EventBus() {}

@@ -2,13 +2,13 @@
 
 #include <ctime>
 
-using namespace message;
+using namespace common;
 
-Message::Message(const user::User &user, const std::string &text, const time_t &msg_timestamp) : user(user), text(text), msg_timestamp(msg_timestamp)
+Message::Message(const User &user, const std::string &text, const time_t &msg_timestamp) : user(user), text(text), msg_timestamp(msg_timestamp)
 {
 }
 
-user::User Message::GetUser() const
+User Message::GetUser() const
 {
     return this->user;
 }

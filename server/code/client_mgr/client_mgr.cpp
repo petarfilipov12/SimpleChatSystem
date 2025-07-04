@@ -8,27 +8,27 @@
 
 using namespace client_mgr;
 
-void ClientMgr::ConnectionOpened(event::Event &event)
+void ClientMgr::ConnectionOpened(event_bus::Event &event)
 {
-    user::User *p_user = (user::User *)event.GetDataIn();
+    common::User *p_user = (common::User *)event.GetDataIn();
     this->user_timeouts[*p_user] = time(nullptr);
 }
 
-void ClientMgr::ConnectionClosed(event::Event &event)
+void ClientMgr::ConnectionClosed(event_bus::Event &event)
 {
-    user::User *p_user = (user::User *)event.GetDataIn();
+    common::User *p_user = (common::User *)event.GetDataIn();
     this->user_timeouts.erase(*p_user);
 }
 
-void ClientMgr::NewMessage(event::Event &event)
+void ClientMgr::NewMessage(event_bus::Event &event)
 {
-    message::Message *p_message = (message::Message *)event.GetDataIn();
+    common::Message *p_message = (common::Message *)event.GetDataIn();
     this->user_timeouts[p_message->GetUser()] = time(nullptr);
 }
 
-void ClientMgr::GetUsers(event::Event &event)
+void ClientMgr::GetUsers(event_bus::Event &event)
 {
-    std::set<user::User> *p_users = (std::set<user::User> *)event.GetDataOut();
+    std::set<common::User> *p_users = (std::set<common::User> *)event.GetDataOut();
 
     for (auto it = this->user_timeouts.begin(); it != this->user_timeouts.end(); it++)
     {
@@ -36,20 +36,20 @@ void ClientMgr::GetUsers(event::Event &event)
     }
 }
 
-void ClientMgr::EventHandler(event::Event &event)
+void ClientMgr::EventHandler(event_bus::Event &event)
 {
     switch (event.GetEventId())
     {
-    case event::EVENT_ID_CONNECTION_OPENED:
+    case event_bus::EVENT_ID_CONNECTION_OPENED:
         this->ConnectionOpened(event);
         break;
-    case event::EVENT_ID_CONNECTION_CLOSED:
+    case event_bus::EVENT_ID_CONNECTION_CLOSED:
         this->ConnectionClosed(event);
         break;
-    case event::EVENT_ID_NEW_MESSAGE:
+    case event_bus::EVENT_ID_NEW_MESSAGE:
         this->NewMessage(event);
         break;
-    case event::EVENT_ID_GET_USERS:
+    case event_bus::EVENT_ID_GET_USERS:
         this->GetUsers(event);
         break;
     default:
@@ -65,7 +65,7 @@ void ClientMgr::Cyclic()
         {
             if (time(nullptr) >= (it->second + this->timeout))
             {
-                this->event_bus.Send(event::Event(event::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
+                this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
             }
         }
 
@@ -73,14 +73,14 @@ void ClientMgr::Cyclic()
     }
 }
 
-ClientMgr::ClientMgr(EventBus &event_bus, const event_receiver::eventReceiverId_t receiver_id) : event_bus(event_bus)
+ClientMgr::ClientMgr(event_bus::EventBus &event_bus, const event_bus::eventReceiverId_t receiver_id) : event_bus(event_bus)
 {
-    this->event_receiver = event_receiver::EventReceiver(receiver_id, std::bind(&ClientMgr::EventHandler, this, std::placeholders::_1));
+    this->event_receiver = event_bus::EventReceiver(receiver_id, std::bind(&ClientMgr::EventHandler, this, std::placeholders::_1));
 
     this->event_bus.AddReceiver(this->event_receiver);
-    this->event_bus.Subscribe(receiver_id, event::EVENT_ID_CONNECTION_OPENED);
-    this->event_bus.Subscribe(receiver_id, event::EVENT_ID_CONNECTION_CLOSED);
-    this->event_bus.Subscribe(receiver_id, event::EVENT_ID_NEW_MESSAGE);
+    this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_CONNECTION_OPENED);
+    this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_CONNECTION_CLOSED);
+    this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_NEW_MESSAGE);
 }
 
 void ClientMgr::run()

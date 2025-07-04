@@ -5,24 +5,24 @@
 
 #include "user.h"
 
-namespace message
+namespace common
 {
     class Message
     {
     private:
-        const user::User user;
+        const User user;
         const std::string text;
         const time_t msg_timestamp;
 
     public:
-        Message(const user::User &user, const std::string &text, const time_t &msg_timestamp);
+        Message(const User &user, const std::string &text, const time_t &msg_timestamp);
 
-        user::User GetUser() const;
+        User GetUser() const;
 
         std::string GetText() const;
 
         std::string ToString() const;
     };
-} // namespace message
+} // namespace common
 
 #endif

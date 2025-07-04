@@ -3,6 +3,8 @@
 #include <fstream>
 #include <dirent.h>
 
+using namespace common;
+
 inline returnType_t FileCheck(const std::fstream &file)
 {
     returnType_t ret = RET_OK;
@@ -15,7 +17,7 @@ inline returnType_t FileCheck(const std::fstream &file)
     return ret;
 }
 
-returnType_t file_handler::Read(const std::string &file_path, std::string &string_out)
+returnType_t FileRead(const std::string &file_path, std::string &string_out)
 {
     std::fstream file(file_path, std::ios::in);
     returnType_t ret = FileCheck(file);
@@ -30,7 +32,7 @@ returnType_t file_handler::Read(const std::string &file_path, std::string &strin
     return ret;
 }
 
-void file_handler::Write(const std::string &file_path, const std::string &text)
+void common::FileWrite(const std::string &file_path, const std::string &text)
 {
     std::fstream file(file_path, std::ios::out);
 
@@ -39,7 +41,7 @@ void file_handler::Write(const std::string &file_path, const std::string &text)
     file.close();
 }
 
-returnType_t file_handler::Append(const std::string &file_path, const std::string &text)
+returnType_t common::FileAppend(const std::string &file_path, const std::string &text)
 {
     std::fstream file(file_path, std::ios::app);
     returnType_t ret = FileCheck(file);
@@ -54,15 +56,15 @@ returnType_t file_handler::Append(const std::string &file_path, const std::strin
     return ret;
 }
 
-void file_handler::AppendOrWrite(const std::string &file_path, const std::string &text)
+void common::FileAppendOrWrite(const std::string &file_path, const std::string &text)
 {
-    if (file_handler::Append(file_path, text) != RET_OK)
+    if (common::FileAppend(file_path, text) != RET_OK)
     {
-        file_handler::Write(file_path, text);
+        common::FileWrite(file_path, text);
     }
 }
 
-returnType_t file_handler::GetFiles(const std::string &dir_path, std::set<std::string> &file_paths_out)
+returnType_t common::FileGetFiles(const std::string &dir_path, std::set<std::string> &file_paths_out)
 {
     DIR *dir = opendir(dir_path.c_str());
     struct dirent *ent;

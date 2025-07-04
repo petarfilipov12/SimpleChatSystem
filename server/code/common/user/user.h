@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace user
+namespace common
 {
     class User
     {
@@ -38,6 +38,6 @@ namespace user
 
         bool operator<(const User &u) const;
     };
-} // namespace user
+} // namespace common
 
 #endif

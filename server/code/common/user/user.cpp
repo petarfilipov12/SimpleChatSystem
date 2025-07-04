@@ -1,7 +1,7 @@
 #include "user.h"
 #include <ctime>
 
-using namespace user;
+using namespace common;
 
 User::User()
 {

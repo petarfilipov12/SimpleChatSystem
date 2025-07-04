@@ -17,14 +17,13 @@
 
 int main()
 {
-    eventReceiverId_t receiver_id = 0;
-    std::vector<std::thread> threads;
+    event_bus::eventReceiverId_t receiver_id = 0;
 
-    EventBus event_bus;
-    ClientMgr client_mgr(event_bus, receiver_id);
-    Logger logger(MESSEGES_LOGS_DIR, ++receiver_id, event_bus);
-    WebsocketBroadcastServer ws_server(event_bus, WEBSOCKET_PORT, ++receiver_id);
-    RestServer rest_server(REST_SERVER_HOST, REST_SERVER_PORT, event_bus);
+    event_bus::EventBus event_bus;
+    client_mgr::ClientMgr client_mgr(event_bus, receiver_id);
+    logger::Logger logger(MESSEGES_LOGS_DIR, ++receiver_id, event_bus);
+    websocket_server::WebsocketServer ws_server(event_bus, WEBSOCKET_PORT, ++receiver_id);
+    rest_server::RestServer rest_server(REST_SERVER_HOST, REST_SERVER_PORT, event_bus);
 
     client_mgr.run();
     logger.run();
