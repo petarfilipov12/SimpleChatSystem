@@ -1,5 +1,7 @@
 #include "event.h"
 
+using namespace event;
+
 Event::Event(const eventId_t id, const void *data_in, void *data_out)
 {
     this->id = id;

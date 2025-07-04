@@ -2,94 +2,42 @@
 #define USER_H
 
 #include <string>
-#include <ctime>
 
-class User
+namespace user
 {
-private:
-    std::string username;
-    std::string ip;
-    uint port;
-    time_t joined_timestamp;
-
-public:
-    User()
+    class User
     {
-        this->username = "";
-        this->ip = "";
-        this->port = 0;
-    }
+    private:
+        std::string username;
+        std::string ip;
+        uint port;
+        time_t joined_timestamp;
 
-    User(std::string username)
-    {
-        this->username = username;
-        this->ip = "";
-        this->port = 0;
-    }
+    public:
+        User();
 
-    User(std::string username, std::string ip, uint port)
-    {
-        this->username = username;
-        this->ip = ip;
-        this->port = port;
-    }
+        User(std::string username);
 
-    std::string GetUsername() const
-    {
-        return this->username;
-    }
+        User(std::string username, std::string ip, uint port);
 
-    std::string GetIp() const
-    {
-        return this->ip;
-    }
+        std::string GetUsername() const;
 
-    uint GetPort() const
-    {
-        return this->port;
-    }
+        std::string GetIp() const;
 
-    time_t GetJoinedTimestamp() const
-    {
-        return this->joined_timestamp;
-    }
+        uint GetPort() const;
 
-    void SetCurrentTime()
-    {
-        this->joined_timestamp = time(nullptr);
-    }
+        time_t GetJoinedTimestamp() const;
 
-    std::string ToString() const
-    {
-        return this->username + " -> " + this->ip + ":" + std::to_string(this->port);
-    }
+        void SetCurrentTime();
 
-    User& operator=(const User& u)
-    {
-        this->username = u.username;
-        this->ip = u.ip;
-        this->port = u.port;
-        this->joined_timestamp = u.joined_timestamp;
+        std::string ToString() const;
 
-        return *this;
-    }
+        User &operator=(const User &u);
 
-    bool operator==(const User& u) const
-    {
-        bool ret = false;
+        bool operator==(const User &u) const;
 
-        if(this->username == u.username)
-        {
-            ret = true;
-        }
+        bool operator<(const User &u) const;
+    };
+} // namespace user
 
-        return ret;
-    }
-
-    bool operator<(const User& u) const
-    {
-        return this->username < u.username;
-    }
-};
-
-#endif 
+#endif

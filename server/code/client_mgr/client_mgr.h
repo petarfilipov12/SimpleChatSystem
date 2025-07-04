@@ -1,108 +1,40 @@
 #ifndef CLIENT_MGR_H
 #define CLIENT_MGR_H
 
-#include "return_type.h"
-
 #include <map>
-#include <set>
-#include <ctime>
-#include <chrono>
 
 #include "event.h"
 #include "event_bus.h"
 #include "user.h"
-#include "message.h"
 
-class ClientMgr
+namespace client_mgr
 {
-private:
-    EventBus& event_bus;
-    EventReceiver event_receiver;
-    const time_t timeout = 10*60; //10min
-
-    std::map<User, time_t> user_timeouts;
-
-    void ConnectionOpened(Event& event)
+    class ClientMgr
     {
-        User* p_user = (User*)event.GetDataIn();
-        this->user_timeouts[*p_user] = time(nullptr);
-    }
+    private:
+        EventBus &event_bus;
+        event_receiver::EventReceiver event_receiver;
+        const time_t timeout = 10 * 60; // 10min
 
-    void ConnectionClosed(Event& event)
-    {
-        User* p_user = (User*)event.GetDataIn();
-        this->user_timeouts.erase(*p_user);
-    }
+        std::map<user::User, time_t> user_timeouts;
 
-    void NewMessage(Event& event)
-    {
-        Message* p_message = (Message*)event.GetDataIn();
-        this->user_timeouts[p_message->GetUser()] = time(nullptr);
-    }
+        void ConnectionOpened(event::Event &event);
 
-    void GetUsers(Event& event)
-    {
-        std::set<User>* p_users = (std::set<User>*)event.GetDataOut();
+        void ConnectionClosed(event::Event &event);
 
-        for(auto it = this->user_timeouts.begin(); it != this->user_timeouts.end(); it++)
-        {
-            p_users->insert(it->first);
-        }
-    }
+        void NewMessage(event::Event &event);
 
-    void EventHandler(Event& event)
-    {
-        switch(event.GetEventId())
-        {
-            case EVENT_ID_CONNECTION_OPENED:
-                this->ConnectionOpened(event);
-                break;
-            case EVENT_ID_CONNECTION_CLOSED:
-                this->ConnectionClosed(event);
-                break;
-            case EVENT_ID_NEW_MESSAGE:
-                this->NewMessage(event);
-                break;
-            case EVENT_ID_GET_USERS:
-                this->GetUsers(event);
-                break;
-            default:
-                break;
-        }
-    }
+        void GetUsers(event::Event &event);
 
-    void Cyclic()
-    {
-        while(true)
-        {
-            for(auto it = this->user_timeouts.begin(); it != this->user_timeouts.end(); it++)
-            {
-                if(time(nullptr) >= (it->second + this->timeout))
-                {
-                    this->event_bus.Send(Event(EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
-                }
-            }
+        void EventHandler(event::Event &event);
 
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-    }
+        void Cyclic();
 
-public:
-    ClientMgr(EventBus& event_bus, const eventReceiverId_t receiver_id): event_bus(event_bus)
-    {
-        this->event_receiver = EventReceiver(receiver_id, std::bind(&ClientMgr::EventHandler, this, std::placeholders::_1));
+    public:
+        ClientMgr(EventBus &event_bus, const event_receiver::eventReceiverId_t receiver_id);
 
-        this->event_bus.AddReceiver(this->event_receiver);
-        this->event_bus.Subscribe(receiver_id, EVENT_ID_CONNECTION_OPENED);
-        this->event_bus.Subscribe(receiver_id, EVENT_ID_CONNECTION_CLOSED);
-        this->event_bus.Subscribe(receiver_id, EVENT_ID_NEW_MESSAGE);
-    }
-
-    void run()
-    {
-        std::thread t([this]{this->Cyclic();});
-        t.detach();
-    }
-};
+        void run();
+    };
+} // namespace client_mgr
 
 #endif

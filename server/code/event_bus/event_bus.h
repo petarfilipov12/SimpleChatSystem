@@ -5,8 +5,6 @@
 
 #include <unordered_map>
 #include <set>
-#include <thread>
-#include <vector>
 
 #include "event.h"
 #include "event_receiver.h"

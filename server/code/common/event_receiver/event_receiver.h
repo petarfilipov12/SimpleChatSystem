@@ -8,35 +8,40 @@
 
 #include "event.h"
 
-typedef int eventReceiverId_t;
 #define RECEIVER_ID_INVALID 0xffffu;
 
-class EventReceiver {
+namespace event_receiver
+{
+    typedef int eventReceiverId_t;
+
+    class EventReceiver
+    {
     private:
         eventReceiverId_t id;
-        std::set<eventId_t> events;
-        std::function<void(Event&)> callback;
+        std::set<event::eventId_t> events;
+        std::function<void(event::Event &)> callback;
 
     public:
         EventReceiver();
 
-        EventReceiver(const eventReceiverId_t id, const std::function<void(Event&)> callback);
+        EventReceiver(const eventReceiverId_t id, const std::function<void(event::Event &)> callback);
 
         ~EventReceiver();
 
-        returnType_t AddEvent(const eventId_t event_id);
+        returnType_t AddEvent(const event::eventId_t event_id);
 
-        returnType_t RemoveEvent(const eventId_t event_id);
+        returnType_t RemoveEvent(const event::eventId_t event_id);
 
         bool IsEmpty() const;
 
-        bool ContainsEvent(const eventId_t event_id) const;
+        bool ContainsEvent(const event::eventId_t event_id) const;
 
-        std::set<eventId_t>* GetEvents();
+        std::set<event::eventId_t> *GetEvents();
 
         eventReceiverId_t GetId() const;
 
-        std::function<void(Event&)> GetCallback() const;
-};
+        std::function<void(event::Event &)> GetCallback() const;
+    };
+} // namespace event_receiver
 
 #endif

@@ -1,12 +1,14 @@
 #include "event_receiver.h"
 
+using namespace event_receiver;
+
 EventReceiver::EventReceiver()
 {
     this->id = RECEIVER_ID_INVALID;
     this->callback = nullptr;
 }
 
-EventReceiver::EventReceiver(const eventReceiverId_t id, const std::function<void(Event &)> callback)
+EventReceiver::EventReceiver(const eventReceiverId_t id, const std::function<void(event::Event &)> callback)
 {
     this->id = id;
     this->callback = callback;
@@ -14,11 +16,11 @@ EventReceiver::EventReceiver(const eventReceiverId_t id, const std::function<voi
 
 EventReceiver::~EventReceiver(){}
 
-returnType_t EventReceiver::AddEvent(const eventId_t event_id)
+returnType_t EventReceiver::AddEvent(const event::eventId_t event_id)
 {
     returnType_t ret = RET_EVENT_ID_INVALID;
 
-    if (event_id < EVENT_ID_INVALID)
+    if (event_id < event::EVENT_ID_INVALID)
     {
         this->events.insert(event_id);
 
@@ -28,11 +30,11 @@ returnType_t EventReceiver::AddEvent(const eventId_t event_id)
     return ret;
 }
 
-returnType_t EventReceiver::RemoveEvent(const eventId_t event_id)
+returnType_t EventReceiver::RemoveEvent(const event::eventId_t event_id)
 {
     returnType_t ret = RET_EVENT_ID_INVALID;
 
-    if (event_id < EVENT_ID_INVALID)
+    if (event_id < event::EVENT_ID_INVALID)
     {
         this->events.erase(event_id);
     }
@@ -45,12 +47,12 @@ bool EventReceiver::IsEmpty() const
     return this->events.empty();
 }
 
-bool EventReceiver::ContainsEvent(const eventId_t event_id) const
+bool EventReceiver::ContainsEvent(const event::eventId_t event_id) const
 {
     return this->events.find(event_id) != this->events.end();
 }
 
-std::set<eventId_t>* EventReceiver::GetEvents()
+std::set<event::eventId_t>* EventReceiver::GetEvents()
 {
     return &this->events;
 }
@@ -60,7 +62,7 @@ eventReceiverId_t EventReceiver::GetId() const
     return this->id;
 }
 
-std::function<void(Event &)> EventReceiver::GetCallback() const
+std::function<void(event::Event &)> EventReceiver::GetCallback() const
 {
     return this->callback;
 }
