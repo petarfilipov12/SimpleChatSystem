@@ -2,6 +2,9 @@
 #define CLIENT_MGR_H
 
 #include <map>
+#include <set>
+#include <shared_mutex>
+#include <mutex>
 
 #include "event.h"
 #include "event_bus.h"
@@ -17,6 +20,10 @@ namespace client_mgr
         const time_t timeout = 10 * 60; // 10min
 
         std::map<common::User, time_t> user_timeouts;
+        std::set<common::User> users;
+
+        std::mutex mtx_user_timeouts;
+        mutable std::shared_mutex mtx_users;
 
         void ConnectionOpened(event_bus::Event &event);
 
@@ -24,7 +31,7 @@ namespace client_mgr
 
         void NewMessage(event_bus::Event &event);
 
-        void GetUsers(event_bus::Event &event);
+        void GetUsers(event_bus::Event &event) const;
 
         void EventHandler(event_bus::Event &event);
 

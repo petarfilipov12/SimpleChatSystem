@@ -8,7 +8,6 @@ Event::Event(const eventId_t id, const void *data_in, void *data_out)
     this->data_in = data_in;
     this->data_out = data_out;
 }
-Event::~Event() {}
 
 eventId_t Event::GetEventId() const
 {

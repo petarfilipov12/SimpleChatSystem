@@ -5,6 +5,7 @@
 
 #include <unordered_map>
 #include <set>
+#include <shared_mutex>
 
 #include "event.h"
 #include "event_receiver.h"
@@ -14,12 +15,13 @@ namespace event_bus
     class EventBus
     {
     private:
-        std::unordered_map<eventReceiverId_t, EventReceiver> event_receivers;
+        std::unordered_map<eventReceiverId_t, EventReceiver*> event_receivers;
         std::unordered_map<eventId_t, std::set<eventReceiverId_t>> event_to_receivers_map;
 
+        std::shared_mutex mtx_event_receivers;
+        std::shared_mutex mtx_event_to_receivers_map;
+
     public:
-        EventBus();
-        ~EventBus();
 
         returnType_t AddReceiver(EventReceiver &event_receiver);
 

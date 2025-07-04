@@ -54,7 +54,7 @@ std::string User::ToString() const
     return this->username + " -> " + this->ip + ":" + std::to_string(this->port);
 }
 
-User &User::operator=(const User &u)
+User& User::operator=(const User &u)
 {
     this->username = u.username;
     this->ip = u.ip;

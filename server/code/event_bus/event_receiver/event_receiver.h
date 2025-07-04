@@ -5,6 +5,7 @@
 
 #include <set>
 #include <functional>
+#include <shared_mutex>
 
 #include "event.h"
 
@@ -21,12 +22,12 @@ namespace event_bus
         std::set<eventId_t> events;
         std::function<void(Event &)> callback;
 
+        mutable std::shared_mutex mtx_events;
+
     public:
         EventReceiver();
 
         EventReceiver(const eventReceiverId_t id, const std::function<void(event_bus::Event &)> callback);
-
-        ~EventReceiver();
 
         returnType_t AddEvent(const eventId_t event_id);
 
@@ -36,12 +37,14 @@ namespace event_bus
 
         bool ContainsEvent(const eventId_t event_id) const;
 
-        std::set<eventId_t> *GetEvents();
+        std::set<eventId_t> GetEvents() const;
 
         eventReceiverId_t GetId() const;
 
         std::function<void(Event &)> GetCallback() const;
+
+        EventReceiver& operator=(const EventReceiver& ev_r);
     };
-} // namespace event_receiver
+} // namespace event_bus
 
 #endif

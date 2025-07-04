@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++11 -g
+CFLAGS = -std=c++17 -g
 
 PROGRAM_NAME = SimpleChatServer
 

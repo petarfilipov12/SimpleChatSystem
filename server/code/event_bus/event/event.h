@@ -29,7 +29,6 @@ namespace event_bus
 
     public:
         Event(const eventId_t id, const void *data_in, void *data_out);
-        ~Event();
 
         eventId_t GetEventId() const;
 
