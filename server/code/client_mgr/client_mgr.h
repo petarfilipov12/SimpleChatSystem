@@ -40,6 +40,16 @@ private:
         this->user_timeouts[p_message->GetUser()] = time(nullptr);
     }
 
+    void GetUsers(Event& event)
+    {
+        std::set<User>* p_users = (std::set<User>*)event.GetDataOut();
+
+        for(auto it = this->user_timeouts.begin(); it != this->user_timeouts.end(); it++)
+        {
+            p_users->insert(it->first);
+        }
+    }
+
     void EventHandler(Event& event)
     {
         switch(event.GetEventId())
@@ -52,6 +62,9 @@ private:
                 break;
             case EVENT_ID_NEW_MESSAGE:
                 this->NewMessage(event);
+                break;
+            case EVENT_ID_GET_USERS:
+                this->GetUsers(event);
                 break;
             default:
                 break;
