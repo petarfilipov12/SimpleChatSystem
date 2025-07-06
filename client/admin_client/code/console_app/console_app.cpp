@@ -16,9 +16,16 @@ returnType_t ConsoleApp::PrintUsers()
         {
             for (auto user : conn_users.users())
             {
+                time_t diff = time(nullptr) - user.joined_timestamp();
+                std::string t = "Time online ";
+                t += std::to_string(diff / 3600) + "h:";
+                t += std::to_string((diff % (3600)) / 60) + "m:";
+                t += std::to_string(diff % 60) + "s";
+
+
                 std::cout << user.username() << " | ";
                 std::cout << user.ip() << ":" << user.port() << " | ";
-                std::cout << user.joined_timestamp() << std::endl;
+                std::cout << t << std::endl;
             }
         }
         else

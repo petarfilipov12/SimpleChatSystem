@@ -69,7 +69,7 @@ returnType_t RestApiClient::KickUser(const std::string &username)
     std::string res;
 
     kick_user::KickUser kick_usr;
-    kick_usr.set_username("User1");
+    kick_usr.set_username(username);
 
     ret = this->Post("/kick_user", kick_usr.SerializeAsString(), res);
 
