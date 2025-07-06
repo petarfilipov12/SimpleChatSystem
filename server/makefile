@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -std=c++17 -g
-CFLAGS_END = -lprotobuf #-lssl -lcrypto
+CFLAGS_END = -lprotobuf -lsqlite3 #-lssl -lcrypto
 
 PROGRAM_NAME = SimpleChatServer
 

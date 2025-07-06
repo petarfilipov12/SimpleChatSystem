@@ -18,9 +18,9 @@ std::string Message::GetText() const
     return this->text;
 }
 
-std::string Message::ToString() const
+std::string Message::GetDate() const
 {
-    struct tm *date = localtime(&(this->msg_timestamp));
+    const struct tm* const date = localtime(&(this->msg_timestamp));
 
     std::string d = ("[" +
                      std::to_string(1900 + date->tm_year) + "-" +
@@ -31,6 +31,13 @@ std::string Message::ToString() const
                      std::to_string(date->tm_min) + ":" +
                      std::to_string(date->tm_sec) +
                      "]");
+    
+    return d;
+}
+
+std::string Message::ToString() const
+{
+    std::string d = this->GetDate();
 
     return d + " " + this->user.GetUsername() + ": " + this->text;
 }

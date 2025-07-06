@@ -21,6 +21,8 @@ namespace common
 
         std::string GetText() const;
 
+        std::string GetDate() const;
+
         std::string ToString() const;
     };
 } // namespace common
