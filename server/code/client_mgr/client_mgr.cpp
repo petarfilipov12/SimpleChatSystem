@@ -97,6 +97,7 @@ ClientMgr::ClientMgr(event_bus::EventBus &event_bus, const event_bus::eventRecei
     this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_CONNECTION_OPENED);
     this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_CONNECTION_CLOSED);
     this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_NEW_MESSAGE);
+    this->event_bus.Subscribe(receiver_id, event_bus::EVENT_ID_GET_USERS);
 }
 
 void ClientMgr::run()

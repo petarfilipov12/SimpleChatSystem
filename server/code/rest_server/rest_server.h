@@ -1,7 +1,7 @@
 #ifndef REST_SERVER_H
 #define REST_SERVER_H
 
-// #define CPPHTTPLIB_OPENSSL_SUPPORT
+//#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "external/httplib.h"
 
 #include <string>

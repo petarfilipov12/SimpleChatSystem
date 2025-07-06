@@ -47,9 +47,12 @@ class WebsocketAPIWrapper:
 
     def Send(self, data):
         self.wsapp.send(data)
+
+    def Disconnect(self):
+        self.wsapp.close()
     
     def Run(self):
-        t = threading.Thread(self.wsapp.run_forever())
+        t = threading.Thread(target=lambda: self.wsapp.run_forever())
         t.daemon = True
         t.start()
 

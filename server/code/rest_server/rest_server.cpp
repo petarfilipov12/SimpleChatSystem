@@ -20,12 +20,16 @@ RestServer::RestServer(event_bus::EventBus& event_bus): event_bus(event_bus)
 {
     this->host = "0.0.0.0";
     this->port = 8080;
+
+    this->InitServices();
 }
 
 RestServer::RestServer(const std::string& host, const unsigned int port, event_bus::EventBus& event_bus): event_bus(event_bus)
 {
     this->host = host;
     this->port = port;
+
+    this->InitServices();
 }
 
 void RestServer::Post(const std::string& url_path, const std::function<void(const httplib::Request &, httplib::Response &)> handler_func)
@@ -42,7 +46,7 @@ void RestServer::run()
 void RestServer::Handler_GetUsers(const httplib::Request &req, httplib::Response &res)
 {   
     std::set<common::User> users;
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, nullptr, &users));
+    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_GET_USERS, nullptr, &users));
 
     connected_users::ConnectedUsers conn_users_msg;
 
@@ -55,7 +59,7 @@ void RestServer::Handler_GetUsers(const httplib::Request &req, httplib::Response
         user_msg->set_joined_timestamp(it->GetJoinedTimestamp());
     }
 
-    res.set_content(conn_users_msg.SerializeAsString(), "application/json");
+    res.set_content(conn_users_msg.SerializeAsString(), "text/plain");
 }
 
 void RestServer::Handler_KickUser(const httplib::Request &req, httplib::Response &res)
@@ -67,5 +71,5 @@ void RestServer::Handler_KickUser(const httplib::Request &req, httplib::Response
 
     this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &user, nullptr));
 
-    res.set_content("OK", "application/json");
+    res.set_content("OK", "text/plain");
 }

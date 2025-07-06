@@ -1,5 +1,6 @@
 CC = g++
 CFLAGS = -std=c++17 -g
+CFLAGS_END = -lprotobuf #-lssl -lcrypto
 
 PROGRAM_NAME = SimpleChatServer
 
@@ -15,20 +16,16 @@ OBJS = $(subst $(CODE_DIR), $(BUILD_DIR), $(patsubst %.cpp, %.o, $(CPP_SOURCES))
 #OBJS += $(subst $(CODE_DIR), $(BUILD_DIR), $(patsubst %.cc, %.o, $(CC_SOURCES)))
 
 $(PROGRAM_NAME): $(OBJS) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $(PROGRAM_NAME) $^ -lprotobuf
+	$(CC) $(CFLAGS) -o $(PROGRAM_NAME) $^ $(CFLAGS_END)
 
 $(BUILD_DIR):
 	mkdir -pv $(BUILD_DIR)
 
 -include $(patsubst %.o, %.d, $(OBJS))
 
-# $(BUILD_DIR)/%.o: $(CORE_DIR)/%.cc
-# 	mkdir -pv $(dir $@)
-# 	$(CC) $(CFLAGS) $(INC_FLAGS) -MMD -MP -c $< -o $@ -lprotobuf
-
 $(BUILD_DIR)/%.o: $(CODE_DIR)/%.cpp
 	mkdir -pv $(dir $@)
-	$(CC) $(CFLAGS) $(INC_FLAGS) -MMD -MP -c $< -o $@ -lprotobuf
+	$(CC) $(CFLAGS) $(INC_FLAGS) -MMD -MP -c $< -o $@ $(CFLAGS_END)
 
 clean:
 	rm -rf $(BUILD_DIR)
