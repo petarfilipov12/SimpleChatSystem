@@ -3,7 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/server/code/event_bus/event/**",
+                "${workspaceFolder}/server/code/event_bus/event_receiver/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

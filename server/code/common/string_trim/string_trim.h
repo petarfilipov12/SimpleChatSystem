@@ -1,8 +1,6 @@
 #ifndef STRING_TRIM_H
 #define STRING_TRIM_H
 
-#include "return_type.h"
-
 #include <string>
 #include <algorithm>
 
