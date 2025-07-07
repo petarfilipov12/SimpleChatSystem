@@ -46,7 +46,7 @@ void RestServer::run()
 void RestServer::Handler_GetUsers(const httplib::Request &req, httplib::Response &res)
 {   
     std::set<common::User> users;
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_GET_USERS, nullptr, &users));
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_GET_USERS, nullptr, &users));
 
     connected_users::ConnectedUsers conn_users_msg;
 
@@ -69,7 +69,10 @@ void RestServer::Handler_KickUser(const httplib::Request &req, httplib::Response
     
     common::User user(kick_user_msg.username());
 
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &user, nullptr));
+    // event_bus::EventAsync event_async(event_bus::EVENT_ID_DISCONNECT_USER, &user, nullptr, sizeof(user), 0);
+    // this->event_bus.SendAsync(event_async);
+
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &user, nullptr));
 
     res.set_content("OK", "text/plain");
 }

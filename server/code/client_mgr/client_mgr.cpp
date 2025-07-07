@@ -10,7 +10,7 @@ using namespace client_mgr;
 
 void ClientMgr::ConnectionOpened(event_bus::Event &event)
 {
-    common::User *p_user = (common::User *)event.GetDataIn();
+    const common::User *p_user = (const common::User *)event.GetDataIn();
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
     this->user_timeouts[*p_user] = time(nullptr);
@@ -22,7 +22,7 @@ void ClientMgr::ConnectionOpened(event_bus::Event &event)
 
 void ClientMgr::ConnectionClosed(event_bus::Event &event)
 {
-    common::User *p_user = (common::User *)event.GetDataIn();
+    const common::User *p_user = (const common::User *)event.GetDataIn();
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
     this->user_timeouts.erase(*p_user);
@@ -34,7 +34,7 @@ void ClientMgr::ConnectionClosed(event_bus::Event &event)
 
 void ClientMgr::NewMessage(event_bus::Event &event)
 {
-    common::Message *p_message = (common::Message *)event.GetDataIn();
+    const common::Message *p_message = (const common::Message *)event.GetDataIn();
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
     this->user_timeouts[p_message->GetUser()] = time(nullptr);
@@ -81,7 +81,10 @@ void ClientMgr::Cyclic()
         {
             if (time(nullptr) >= (it->second + this->timeout))
             {
-                this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
+                // event_bus::EventAsync event_async(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr, sizeof(it->first), 0);
+                // this->event_bus.SendAsync(event_async);
+
+                this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
             }
         }
 

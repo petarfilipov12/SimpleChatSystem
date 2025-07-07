@@ -1,6 +1,13 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include <stddef.h>
+
+#include <cstring>
+#include <cstdlib>
+
+#include "user.h"
+
 namespace event_bus
 {
     enum eEventId_t
@@ -22,19 +29,31 @@ namespace event_bus
 
     class Event
     {
-    private:
+    protected:
         eventId_t id;
-        const void *data_in;
+        void *data_in;
         void *data_out;
 
     public:
-        Event(const eventId_t id, const void *data_in, void *data_out);
+        Event();
+
+        Event(const eventId_t id, const void *data_in, const void *data_out);
 
         eventId_t GetEventId() const;
 
         const void *GetDataIn() const;
 
         void *GetDataOut() const;
+    };
+
+    class EventAsync: public Event
+    {
+    public:
+        EventAsync();
+
+        EventAsync(const eventId_t id, const void *data_in, const void *data_out, const size_t event_data_in_size, const size_t event_data_out_size);
+    
+        ~EventAsync();
     };
 } // namespace event
 

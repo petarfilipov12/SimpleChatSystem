@@ -24,7 +24,10 @@ void WebsocketServer::OpenHandler(websocketpp::connection_hdl hdl)
     this->usernames.insert(user.GetUsername());
     lock_usernames.unlock();
 
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, &user, nullptr));
+    // event_bus::EventAsync event_async(event_bus::EVENT_ID_CONNECTION_OPENED, &user, nullptr, sizeof(user), 0);
+    // this->event_bus.SendAsync(event_async);
+
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, &user, nullptr));
 }
 
 void WebsocketServer::CloseHandler(websocketpp::connection_hdl hdl)
@@ -38,7 +41,10 @@ void WebsocketServer::CloseHandler(websocketpp::connection_hdl hdl)
     this->usernames.erase(user.GetUsername());
     lock_usernames.unlock();
 
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, &user, nullptr));
+    // event_bus::EventAsync event_async(event_bus::EVENT_ID_CONNECTION_CLOSED, &user, nullptr, sizeof(user), 0);
+    // this->event_bus.SendAsync(event_async);
+
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, &user, nullptr));
 }
 
 void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketpp::server<websocketpp::config::asio>::message_ptr msg)
@@ -49,7 +55,10 @@ void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketp
 
     common::Message message(conn_user_map_snapshot[hdl], msg->get_payload(), time(nullptr));
 
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, &message, nullptr));
+    // event_bus::EventAsync event_async(event_bus::EVENT_ID_NEW_MESSAGE, &message, nullptr, sizeof(message), 0);
+    // this->event_bus.SendAsync(event_async);
+
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, &message, nullptr));
 
     for (auto it = conn_user_map_snapshot.begin(); it != conn_user_map_snapshot.end(); it++)
     {
@@ -85,7 +94,10 @@ void WebsocketServer::FailHandler(websocketpp::connection_hdl hdl)
     this->val_map.erase(hdl);
     lock_val_map.unlock();
 
-    this->event_bus.Send(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, &user, nullptr));
+    // event_bus::EventAsync event_async(event_bus::EVENT_ID_CONNECTION_FAILED, &user, nullptr, sizeof(user), 0);
+    // this->event_bus.SendAsync(event_async);
+
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, &user, nullptr));
 }
 
 void WebsocketServer::CloseConnection(websocketpp::connection_hdl hdl)
@@ -145,7 +157,7 @@ void WebsocketServer::GetConnectionPort(websocketpp::connection_hdl &hdl, uint &
 
 void WebsocketServer::DisconnectUser(event_bus::Event &event)
 {
-    common::User *p_user = (common::User *)event.GetDataIn();
+    const common::User *p_user = (const common::User *)event.GetDataIn();
 
     for (auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
     {

@@ -3,6 +3,7 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <cstring>
 
 using namespace event_bus;
 
@@ -116,7 +117,7 @@ returnType_t EventBus::Unsubscribe(const eventReceiverId_t receiver_id, const ev
     return ret;
 }
 
-returnType_t EventBus::Send(const Event &event)
+returnType_t EventBus::SendSync(const Event &event)
 {
     returnType_t ret = RET_EVENT_ID_INVALID;
 
@@ -153,4 +154,50 @@ returnType_t EventBus::Send(const Event &event)
     }
 
     return ret;
+}
+
+void EventBus::SendAsync(const EventAsync &event_async)
+{
+    this->event_async_queue_lock.lock();
+    this->event_async_queue.push(event_async);
+    this->event_async_queue_lock.unlock();
+}
+
+void EventBus::EmitAsync(EventAsync event_async)
+{
+    this->SendSync(Event(event_async));
+}
+
+void EventBus::Cyclic()
+{
+    EventAsync event_async;
+    bool flag;
+
+    while(true)
+    {
+        flag = false;
+
+        this->event_async_queue_lock.lock();
+        if (!this->event_async_queue.empty())
+        {
+            event_async = this->event_async_queue.front();
+            this->event_async_queue.pop();
+
+            flag = true;
+        }
+        this->event_async_queue_lock.unlock();
+
+        if(flag)
+        {
+            std::thread thread_event_bus([this, event_async]{this->EmitAsync(event_async);});
+            thread_event_bus.detach();
+        }
+    }
+}
+
+void EventBus::run()
+{
+    std::thread t([this]
+                  { this->Cyclic(); });
+    t.detach();
 }
