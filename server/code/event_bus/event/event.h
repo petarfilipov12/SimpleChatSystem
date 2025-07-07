@@ -51,9 +51,13 @@ namespace event_bus
     public:
         EventAsync();
 
+        EventAsync(const EventAsync &async_e);
+
         EventAsync(const eventId_t id, const void *data_in, const void *data_out, const size_t event_data_in_size, const size_t event_data_out_size);
     
-        ~EventAsync();
+        void FreeData();
+
+        EventAsync& operator=(const EventAsync &async_e);
     };
 } // namespace event
 

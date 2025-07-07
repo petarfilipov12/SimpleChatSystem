@@ -14,8 +14,8 @@ Event::Event()
 Event::Event(const eventId_t id, const void *data_in, const void *data_out)
 {
     this->id = id;
-    this->data_in = ((void*)data_in);
-    this->data_out = ((void*)data_out);
+    this->data_in = ((void *)data_in);
+    this->data_out = ((void *)data_out);
 }
 
 eventId_t Event::GetEventId() const
@@ -25,7 +25,7 @@ eventId_t Event::GetEventId() const
 
 const void *Event::GetDataIn() const
 {
-    return ((const void*)this->data_in);
+    return ((const void *)this->data_in);
 }
 
 void *Event::GetDataOut() const
@@ -33,47 +33,53 @@ void *Event::GetDataOut() const
     return this->data_out;
 }
 
-EventAsync::EventAsync(): Event::Event()
+EventAsync::EventAsync() : Event::Event()
 {
+}
+
+EventAsync::EventAsync(const EventAsync &async_e)
+{
+    this->id = async_e.id;
+    this->data_in = async_e.data_in;
+    this->data_out = async_e.data_out;
 }
 
 EventAsync::EventAsync(const eventId_t id, const void *data_in, const void *data_out, const size_t event_data_in_size, const size_t event_data_out_size)
 {
-    void* data_in_copy = nullptr;
-    void* data_out_copy = nullptr;
+    void *data_in_copy = nullptr;
 
-    if( (data_in != nullptr) && (event_data_in_size > 0) )
+    if ((data_in != nullptr) && (event_data_in_size > 0))
     {
         data_in_copy = malloc(event_data_in_size);
-        if(data_in_copy != NULL)
+        if (data_in_copy != NULL)
         {
             memcpy(data_in_copy, data_in, event_data_in_size);
-        }
-    }
-    
-    if( (data_out != nullptr) && (event_data_out_size > 0) )
-    {
-        data_out_copy = malloc(event_data_out_size);
-        if(data_out_copy != NULL)
-        {
-            memcpy(data_out_copy, data_out, event_data_out_size);
         }
     }
 
     this->id = id;
     this->data_in = data_in_copy;
-    this->data_out = data_out_copy;
+    this->data_out = ((void *)data_out);
 }
 
-EventAsync::~EventAsync()
+void EventAsync::FreeData()
 {
-    if(this->data_in != nullptr)
+    if (this->data_in != nullptr)
     {
         free(this->data_in);
     }
 
-    if(this->data_out != nullptr)
+    if (this->data_out != nullptr)
     {
         free(this->data_out);
     }
+}
+
+EventAsync &EventAsync::operator=(const EventAsync &async_e)
+{
+    this->id = async_e.id;
+    this->data_in = async_e.data_in;
+    this->data_out = async_e.data_out;
+
+    return *this;
 }

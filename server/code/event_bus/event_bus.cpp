@@ -166,6 +166,7 @@ void EventBus::SendAsync(const EventAsync &event_async)
 void EventBus::EmitAsync(EventAsync event_async)
 {
     this->SendSync(Event(event_async));
+    event_async.FreeData();
 }
 
 void EventBus::Cyclic()
