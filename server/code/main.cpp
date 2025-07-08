@@ -24,7 +24,7 @@ int main()
     event_bus::eventReceiverId_t receiver_id = 0;
 
     event_bus::EventBus event_bus;
-    //event_bus.run();
+    event_bus.run();
     
     client_mgr::ClientMgr client_mgr(event_bus, receiver_id);
     logger::Logger logger(MESSEGES_LOGS_DIR, ++receiver_id, event_bus);

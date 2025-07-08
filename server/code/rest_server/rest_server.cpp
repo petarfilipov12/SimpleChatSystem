@@ -69,10 +69,7 @@ void RestServer::Handler_KickUser(const httplib::Request &req, httplib::Response
     
     common::User user(kick_user_msg.username());
 
-    // event_bus::EventAsync event_async(event_bus::EVENT_ID_DISCONNECT_USER, &user, nullptr, sizeof(user), 0);
-    // this->event_bus.SendAsync(event_async);
-
-    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, user, nullptr));
 
     res.set_content("OK", "text/plain");
 }

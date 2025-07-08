@@ -3,6 +3,7 @@
 #include <set>
 #include <thread>
 #include <chrono>
+#include <any>
 
 #include "message.h"
 
@@ -10,39 +11,39 @@ using namespace client_mgr;
 
 void ClientMgr::ConnectionOpened(event_bus::Event &event)
 {
-    const common::User *p_user = (const common::User *)event.GetDataIn();
+    const common::User user = std::any_cast<const common::User>(event.GetDataIn());
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
-    this->user_timeouts[*p_user] = time(nullptr);
+    this->user_timeouts[user] = time(nullptr);
     lock_user_timeouts.unlock();
 
     std::unique_lock<std::shared_mutex> lock_users(this->mtx_users);
-    this->users.insert(*p_user);
+    this->users.insert(user);
 }
 
 void ClientMgr::ConnectionClosed(event_bus::Event &event)
 {
-    const common::User *p_user = (const common::User *)event.GetDataIn();
+    const common::User user = std::any_cast<const common::User>(event.GetDataIn());
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
-    this->user_timeouts.erase(*p_user);
+    this->user_timeouts.erase(user);
     lock_user_timeouts.unlock();
 
     std::unique_lock<std::shared_mutex> lock_users(this->mtx_users);
-    this->users.erase(*p_user);
+    this->users.erase(user);
 }
 
 void ClientMgr::NewMessage(event_bus::Event &event)
 {
-    const common::Message *p_message = (const common::Message *)event.GetDataIn();
+    const common::Message message = std::any_cast<const common::Message>(event.GetDataIn());
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
-    this->user_timeouts[p_message->GetUser()] = time(nullptr);
+    this->user_timeouts[message.GetUser()] = time(nullptr);
 }
 
 void ClientMgr::GetUsers(event_bus::Event &event) const
 {
-    std::set<common::User> *p_users = (std::set<common::User> *)event.GetDataOut();
+    std::set<common::User> *p_users = std::any_cast<std::set<common::User> *>(event.GetDataOut());
 
     std::shared_lock<std::shared_mutex> lock(this->mtx_users);
     *p_users = this->users;
@@ -81,10 +82,7 @@ void ClientMgr::Cyclic()
         {
             if (time(nullptr) >= (it->second + this->timeout))
             {
-                // event_bus::EventAsync event_async(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr, sizeof(it->first), 0);
-                // this->event_bus.SendAsync(event_async);
-
-                this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, &(it->first), nullptr));
+                this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, it->first, nullptr));
             }
         }
 

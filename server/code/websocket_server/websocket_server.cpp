@@ -24,10 +24,7 @@ void WebsocketServer::OpenHandler(websocketpp::connection_hdl hdl)
     this->usernames.insert(user.GetUsername());
     lock_usernames.unlock();
 
-    // event_bus::EventAsync event_async(event_bus::EVENT_ID_CONNECTION_OPENED, &user, nullptr, sizeof(user), 0);
-    // this->event_bus.SendAsync(event_async);
-
-    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, &user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, user, nullptr));
 }
 
 void WebsocketServer::CloseHandler(websocketpp::connection_hdl hdl)
@@ -41,10 +38,7 @@ void WebsocketServer::CloseHandler(websocketpp::connection_hdl hdl)
     this->usernames.erase(user.GetUsername());
     lock_usernames.unlock();
 
-    // event_bus::EventAsync event_async(event_bus::EVENT_ID_CONNECTION_CLOSED, &user, nullptr, sizeof(user), 0);
-    // this->event_bus.SendAsync(event_async);
-
-    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, &user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, user, nullptr));
 }
 
 void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketpp::server<websocketpp::config::asio>::message_ptr msg)
@@ -55,10 +49,7 @@ void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketp
 
     common::Message message(conn_user_map_snapshot[hdl], msg->get_payload(), time(nullptr));
 
-    // event_bus::EventAsync event_async(event_bus::EVENT_ID_NEW_MESSAGE, &message, nullptr, sizeof(message), 0);
-    // this->event_bus.SendAsync(event_async);
-
-    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, &message, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, message, nullptr));
 
     for (auto it = conn_user_map_snapshot.begin(); it != conn_user_map_snapshot.end(); it++)
     {
@@ -94,10 +85,7 @@ void WebsocketServer::FailHandler(websocketpp::connection_hdl hdl)
     this->val_map.erase(hdl);
     lock_val_map.unlock();
 
-    // event_bus::EventAsync event_async(event_bus::EVENT_ID_CONNECTION_FAILED, &user, nullptr, sizeof(user), 0);
-    // this->event_bus.SendAsync(event_async);
-
-    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, &user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, user, nullptr));
 }
 
 void WebsocketServer::CloseConnection(websocketpp::connection_hdl hdl)
@@ -157,11 +145,11 @@ void WebsocketServer::GetConnectionPort(websocketpp::connection_hdl &hdl, uint &
 
 void WebsocketServer::DisconnectUser(event_bus::Event &event)
 {
-    const common::User *p_user = (const common::User *)event.GetDataIn();
+    const common::User user = std::any_cast<const common::User>(event.GetDataIn());
 
     for (auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
     {
-        if (it->second == *p_user)
+        if (it->second == user)
         {
             this->CloseConnection(it->first);
             break;
@@ -183,6 +171,8 @@ void WebsocketServer::EventHandler(event_bus::Event &event)
 
 WebsocketServer::WebsocketServer(event_bus::EventBus &event_bus, const uint port, event_bus::eventReceiverId_t receiver_id) : event_bus(event_bus), srv_port(port)
 {
+    this->srv.clear_access_channels(websocketpp::log::alevel::all);
+
     this->srv.init_asio();
 
     this->srv.set_open_handler(websocketpp::lib::bind(&WebsocketServer::OpenHandler, this, websocketpp::lib::placeholders::_1));

@@ -5,8 +5,7 @@
 
 #include <cstring>
 #include <cstdlib>
-
-#include "user.h"
+#include <any>
 
 namespace event_bus
 {
@@ -31,33 +30,21 @@ namespace event_bus
     {
     protected:
         eventId_t id;
-        void *data_in;
-        void *data_out;
+        std::any data_in;
+        std::any data_out;
 
     public:
         Event();
 
-        Event(const eventId_t id, const void *data_in, const void *data_out);
+        Event(const eventId_t id, const std::any& data_in, const std::any& data_out);
 
-        eventId_t GetEventId() const;
+        const eventId_t GetEventId() const;
 
-        const void *GetDataIn() const;
+        const std::any& GetDataIn() const;
 
-        void *GetDataOut() const;
-    };
+        std::any GetDataOut() const;
 
-    class EventAsync: public Event
-    {
-    public:
-        EventAsync();
-
-        EventAsync(const EventAsync &async_e);
-
-        EventAsync(const eventId_t id, const void *data_in, const void *data_out, const size_t event_data_in_size, const size_t event_data_out_size);
-    
-        void FreeData();
-
-        EventAsync& operator=(const EventAsync &async_e);
+        Event& operator=(const Event &e);
     };
 } // namespace event
 

@@ -1,6 +1,7 @@
 #include "db_manager.h"
 
 #include <map>
+#include <any>
 
 #include "message.h"
 
@@ -8,12 +9,12 @@ using namespace db_manager;
 
 void DbManager::NewMessage(event_bus::Event &event)
 {
-    const common::Message *p_message = (const common::Message *)event.GetDataIn();
+    const common::Message message = std::any_cast<const common::Message>(event.GetDataIn());
 
     std::map<std::string, std::string> column_val_map = {
-        {"Username", p_message->GetUser().GetUsername()},
-        {"Message", p_message->GetText()},
-        {"Date", p_message->GetDate()}};
+        {"Username", message.GetUser().GetUsername()},
+        {"Message", message.GetText()},
+        {"Date", message.GetDate()}};
 
     this->db_wrapper.InsertRow(this->table_name, column_val_map);
 }

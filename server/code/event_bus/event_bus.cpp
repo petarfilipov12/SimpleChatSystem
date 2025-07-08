@@ -156,22 +156,21 @@ returnType_t EventBus::SendSync(const Event &event)
     return ret;
 }
 
-void EventBus::SendAsync(const EventAsync &event_async)
+void EventBus::SendAsync(const Event &event)
 {
     this->event_async_queue_lock.lock();
-    this->event_async_queue.push(event_async);
+    this->event_async_queue.push(event);
     this->event_async_queue_lock.unlock();
 }
 
-void EventBus::EmitAsync(EventAsync event_async)
+void EventBus::EmitAsync(const Event event)
 {
-    this->SendSync(Event(event_async));
-    event_async.FreeData();
+    this->SendSync(event);
 }
 
 void EventBus::Cyclic()
 {
-    EventAsync event_async;
+    Event event;
     bool flag;
 
     while(true)
@@ -181,7 +180,7 @@ void EventBus::Cyclic()
         this->event_async_queue_lock.lock();
         if (!this->event_async_queue.empty())
         {
-            event_async = this->event_async_queue.front();
+            event = this->event_async_queue.front();
             this->event_async_queue.pop();
 
             flag = true;
@@ -190,7 +189,7 @@ void EventBus::Cyclic()
 
         if(flag)
         {
-            std::thread thread_event_bus([this, event_async]{this->EmitAsync(event_async);});
+            std::thread thread_event_bus([this, event]{this->EmitAsync(event);});
             thread_event_bus.detach();
         }
     }
