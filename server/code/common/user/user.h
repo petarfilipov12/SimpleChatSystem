@@ -16,13 +16,13 @@ namespace common
     public:
         User();
 
-        User(std::string username);
+        User(const std::string& username);
 
-        User(std::string username, std::string ip, uint port);
+        User(const std::string& username, const std::string& ip, const uint port);
 
-        std::string GetUsername() const;
+        const std::string& GetUsername() const;
 
-        std::string GetIp() const;
+        const std::string& GetIp() const;
 
         uint GetPort() const;
 

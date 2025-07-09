@@ -59,7 +59,7 @@ bool EventReceiver::ContainsEvent(const eventId_t event_id) const
     return this->events.find(event_id) != this->events.end();
 }
 
-std::set<eventId_t> EventReceiver::GetEvents() const
+const std::set<eventId_t> EventReceiver::GetEvents() const
 {
     std::shared_lock<std::shared_mutex> lock_events(this->mtx_events);
     return this->events;

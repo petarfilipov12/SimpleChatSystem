@@ -29,7 +29,7 @@ void Logger::SetCurrentLogName()
 
 void Logger::NewMessage(event_bus::Event &event)
 {
-    const common::Message message = std::any_cast<const common::Message>(event.GetDataIn());
+    const common::Message& message = std::any_cast<const common::Message&>(event.GetDataIn());
 
     std::lock_guard<std::mutex> guard_mtx(this->mtx);
     common::FileAppendOrWrite(this->log_dir + "/" + this->current_log_file, message.ToString() + '\n');

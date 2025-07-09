@@ -37,7 +37,7 @@ namespace event_bus
 
         bool ContainsEvent(const eventId_t event_id) const;
 
-        std::set<eventId_t> GetEvents() const;
+        const std::set<eventId_t> GetEvents() const;
 
         eventReceiverId_t GetId() const;
 

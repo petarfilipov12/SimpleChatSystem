@@ -17,9 +17,9 @@ namespace common
     public:
         Message(const User &user, const std::string &text, const time_t &msg_timestamp);
 
-        User GetUser() const;
+        const User& GetUser() const;
 
-        std::string GetText() const;
+        const std::string& GetText() const;
 
         std::string GetDate() const;
 

@@ -9,7 +9,7 @@ using namespace db_manager;
 
 void DbManager::NewMessage(event_bus::Event &event)
 {
-    const common::Message message = std::any_cast<const common::Message>(event.GetDataIn());
+    const common::Message& message = std::any_cast<const common::Message&>(event.GetDataIn());
 
     std::map<std::string, std::string> column_val_map = {
         {"Username", message.GetUser().GetUsername()},

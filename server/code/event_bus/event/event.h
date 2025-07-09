@@ -42,7 +42,7 @@ namespace event_bus
 
         const std::any& GetDataIn() const;
 
-        std::any GetDataOut() const;
+        const std::any& GetDataOut() const;
 
         Event& operator=(const Event &e);
     };

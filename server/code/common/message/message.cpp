@@ -8,12 +8,12 @@ Message::Message(const User &user, const std::string &text, const time_t &msg_ti
 {
 }
 
-User Message::GetUser() const
+const User& Message::GetUser() const
 {
     return this->user;
 }
 
-std::string Message::GetText() const
+const std::string& Message::GetText() const
 {
     return this->text;
 }

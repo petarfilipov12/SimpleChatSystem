@@ -10,26 +10,26 @@ User::User()
     this->port = 0;
 }
 
-User::User(std::string username)
+User::User(const std::string& username)
 {
     this->username = username;
     this->ip = "";
     this->port = 0;
 }
 
-User::User(std::string username, std::string ip, uint port)
+User::User(const std::string& username, const std::string& ip, const uint port)
 {
     this->username = username;
     this->ip = ip;
     this->port = port;
 }
 
-std::string User::GetUsername() const
+const std::string& User::GetUsername() const
 {
     return this->username;
 }
 
-std::string User::GetIp() const
+const std::string& User::GetIp() const
 {
     return this->ip;
 }

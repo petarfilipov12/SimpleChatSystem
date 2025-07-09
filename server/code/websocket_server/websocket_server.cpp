@@ -145,7 +145,7 @@ void WebsocketServer::GetConnectionPort(websocketpp::connection_hdl &hdl, uint &
 
 void WebsocketServer::DisconnectUser(event_bus::Event &event)
 {
-    const common::User user = std::any_cast<const common::User>(event.GetDataIn());
+    const common::User& user = std::any_cast<const common::User&>(event.GetDataIn());
 
     for (auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
     {

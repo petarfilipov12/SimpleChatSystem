@@ -27,7 +27,7 @@ const std::any &Event::GetDataIn() const
     return this->data_in;
 }
 
-std::any Event::GetDataOut() const
+const std::any& Event::GetDataOut() const
 {
     return this->data_out;
 }

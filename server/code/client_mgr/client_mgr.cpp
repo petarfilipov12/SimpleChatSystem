@@ -11,7 +11,7 @@ using namespace client_mgr;
 
 void ClientMgr::ConnectionOpened(event_bus::Event &event)
 {
-    const common::User user = std::any_cast<const common::User>(event.GetDataIn());
+    const common::User& user = std::any_cast<const common::User&>(event.GetDataIn());
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
     this->user_timeouts[user] = time(nullptr);
@@ -23,7 +23,7 @@ void ClientMgr::ConnectionOpened(event_bus::Event &event)
 
 void ClientMgr::ConnectionClosed(event_bus::Event &event)
 {
-    const common::User user = std::any_cast<const common::User>(event.GetDataIn());
+    const common::User& user = std::any_cast<const common::User&>(event.GetDataIn());
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
     this->user_timeouts.erase(user);
@@ -35,7 +35,7 @@ void ClientMgr::ConnectionClosed(event_bus::Event &event)
 
 void ClientMgr::NewMessage(event_bus::Event &event)
 {
-    const common::Message message = std::any_cast<const common::Message>(event.GetDataIn());
+    const common::Message& message = std::any_cast<const common::Message&>(event.GetDataIn());
 
     std::unique_lock<std::mutex> lock_user_timeouts(this->mtx_user_timeouts);
     this->user_timeouts[message.GetUser()] = time(nullptr);
