@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <ctime>
+#include <memory>
 
 #include "message.h"
 
@@ -10,35 +11,35 @@ using namespace websocket_server;
 void WebsocketServer::OpenHandler(websocketpp::connection_hdl hdl)
 {
     std::unique_lock<std::mutex> lock_val_map(this->mtx_val_map);
-    common::User user = this->val_map[hdl];
+    std::shared_ptr<common::User> p_user = std::make_shared<common::User>(this->val_map[hdl]);
     this->val_map.erase(hdl);
     lock_val_map.unlock();
 
-    user.SetCurrentTime();
+    p_user->SetCurrentTime();
 
     std::unique_lock<std::shared_mutex> lock_conn_user_map(this->mtx_conn_user_map);
-    this->conn_user_map.insert({hdl, user});
+    this->conn_user_map.insert({hdl, *p_user});
     lock_conn_user_map.unlock();
 
     std::unique_lock<std::shared_mutex> lock_usernames(this->mtx_usernames);
-    this->usernames.insert(user.GetUsername());
+    this->usernames.insert(p_user->GetUsername());
     lock_usernames.unlock();
 
-    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_OPENED, p_user, nullptr));
 }
 
 void WebsocketServer::CloseHandler(websocketpp::connection_hdl hdl)
 {
     std::unique_lock<std::shared_mutex> lock_conn_user_map(this->mtx_conn_user_map);
-    common::User user = this->conn_user_map[hdl];
+    std::shared_ptr<const common::User> p_user = std::make_shared<const common::User>(this->conn_user_map[hdl]);
     this->conn_user_map.erase(hdl);
     lock_conn_user_map.unlock();
 
     std::unique_lock<std::shared_mutex> lock_usernames(this->mtx_usernames);
-    this->usernames.erase(user.GetUsername());
+    this->usernames.erase(p_user->GetUsername());
     lock_usernames.unlock();
 
-    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_CLOSED, p_user, nullptr));
 }
 
 void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketpp::server<websocketpp::config::asio>::message_ptr msg)
@@ -47,13 +48,13 @@ void WebsocketServer::MessageHandler(websocketpp::connection_hdl hdl, websocketp
     auto conn_user_map_snapshot = this->conn_user_map;
     lock_conn_user_map.unlock();
 
-    common::Message message(conn_user_map_snapshot[hdl], msg->get_payload(), time(nullptr));
+    std::shared_ptr<const common::Message> p_message = std::make_shared<const common::Message>(common::Message(conn_user_map_snapshot[hdl], msg->get_payload(), time(nullptr)));
 
-    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, message, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_NEW_MESSAGE, p_message, nullptr));
 
     for (auto it = conn_user_map_snapshot.begin(); it != conn_user_map_snapshot.end(); it++)
     {
-        this->srv.send(it->first, message.ToString(), msg->get_opcode());
+        this->srv.send(it->first, p_message->ToString(), msg->get_opcode());
     }
 }
 
@@ -81,11 +82,11 @@ bool WebsocketServer::ValidateHandler(websocketpp::connection_hdl hdl)
 void WebsocketServer::FailHandler(websocketpp::connection_hdl hdl)
 {
     std::unique_lock<std::mutex> lock_val_map(this->mtx_val_map);
-    common::User user = this->val_map[hdl];
+    std::shared_ptr<const common::User> p_user = std::make_shared<const common::User>(this->val_map[hdl]);
     this->val_map.erase(hdl);
     lock_val_map.unlock();
 
-    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_CONNECTION_FAILED, p_user, nullptr));
 }
 
 void WebsocketServer::CloseConnection(websocketpp::connection_hdl hdl)
@@ -145,11 +146,11 @@ void WebsocketServer::GetConnectionPort(websocketpp::connection_hdl &hdl, uint &
 
 void WebsocketServer::DisconnectUser(event_bus::Event &event)
 {
-    const common::User& user = std::any_cast<const common::User&>(event.GetDataIn());
+    std::shared_ptr<const common::User> p_user = std::static_pointer_cast<const common::User>(event.GetDataIn());
 
     for (auto it = this->conn_user_map.begin(); it != this->conn_user_map.end(); it++)
     {
-        if (it->second == user)
+        if (it->second == *p_user)
         {
             this->CloseConnection(it->first);
             break;

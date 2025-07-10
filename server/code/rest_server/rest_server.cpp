@@ -45,12 +45,12 @@ void RestServer::run()
 
 void RestServer::Handler_GetUsers(const httplib::Request &req, httplib::Response &res)
 {   
-    std::set<common::User> users;
-    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_GET_USERS, nullptr, &users));
+    std::shared_ptr<std::set<common::User> > p_users = std::make_shared<std::set<common::User> >(std::set<common::User>());
+    this->event_bus.SendSync(event_bus::Event(event_bus::EVENT_ID_GET_USERS, nullptr, p_users));
 
     connected_users::ConnectedUsers conn_users_msg;
 
-    for(auto it = users.begin(); it != users.end(); it++)
+    for(auto it = p_users->begin(); it != p_users->end(); it++)
     {
         auto user_msg = conn_users_msg.add_users();
         user_msg->set_username(it->GetUsername());
@@ -67,9 +67,9 @@ void RestServer::Handler_KickUser(const httplib::Request &req, httplib::Response
     kick_user::KickUser kick_user_msg;
     kick_user_msg.ParseFromString(req.body);
     
-    common::User user(kick_user_msg.username());
+    std::shared_ptr<const common::User> p_user = std::make_shared<const common::User>(common::User(kick_user_msg.username()));
 
-    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, user, nullptr));
+    this->event_bus.SendAsync(event_bus::Event(event_bus::EVENT_ID_DISCONNECT_USER, p_user, nullptr));
 
     res.set_content("OK", "text/plain");
 }

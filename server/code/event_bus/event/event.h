@@ -5,7 +5,7 @@
 
 #include <cstring>
 #include <cstdlib>
-#include <any>
+#include <memory>
 
 namespace event_bus
 {
@@ -30,19 +30,19 @@ namespace event_bus
     {
     protected:
         eventId_t id;
-        std::any data_in;
-        std::any data_out;
+        std::shared_ptr<const void> data_in;
+        std::shared_ptr<void> data_out;
 
     public:
         Event();
 
-        Event(const eventId_t id, const std::any& data_in, const std::any& data_out);
+        Event(const eventId_t id, const std::shared_ptr<const void>& data_in, const std::shared_ptr<void>& data_out);
 
         const eventId_t GetEventId() const;
 
-        const std::any& GetDataIn() const;
+        const std::shared_ptr<const void>& GetDataIn() const;
 
-        const std::any& GetDataOut() const;
+        const std::shared_ptr<void>& GetDataOut() const;
 
         Event& operator=(const Event &e);
     };

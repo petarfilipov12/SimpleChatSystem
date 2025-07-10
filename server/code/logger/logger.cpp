@@ -4,7 +4,7 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
-#include <any>
+#include <memory>
 
 #include "file_handler.h"
 #include "message.h"
@@ -29,10 +29,10 @@ void Logger::SetCurrentLogName()
 
 void Logger::NewMessage(event_bus::Event &event)
 {
-    const common::Message& message = std::any_cast<const common::Message&>(event.GetDataIn());
+    std::shared_ptr<const common::Message> p_message = std::static_pointer_cast<const common::Message>(event.GetDataIn());
 
     std::lock_guard<std::mutex> guard_mtx(this->mtx);
-    common::FileAppendOrWrite(this->log_dir + "/" + this->current_log_file, message.ToString() + '\n');
+    common::FileAppendOrWrite(this->log_dir + "/" + this->current_log_file, p_message->ToString() + '\n');
 }
 
 void Logger::EventHandler(event_bus::Event &event)
